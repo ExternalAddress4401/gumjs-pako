@@ -1,13 +1,9 @@
-'use strict';
+import assert from 'assert';
 
-
-const assert = require('assert');
-const { loadSamples } = require('./helpers');
-const pako = require('../index');
-
+import pako from '../index.js';
+import { loadSamples } from './helpers.js';
 
 const samples = loadSamples();
-
 
 function randomBuf(size) {
   const buf = new Uint8Array(size);
@@ -31,7 +27,7 @@ function testChunk(buf, expected, packer, chunkSize) {
   count = Math.ceil(buf.length / chunkSize);
   pos = 0;
   for (i = 0; i < count; i++) {
-    size = (buf.length - pos) < chunkSize ? buf.length - pos : chunkSize;
+    size = buf.length - pos < chunkSize ? buf.length - pos : chunkSize;
     _in = new Uint8Array(size);
     _in.set(buf.subarray(pos, pos + size), 0);
     packer.push(_in, i === count - 1);
@@ -43,11 +39,14 @@ function testChunk(buf, expected, packer, chunkSize) {
 
   assert(!packer.err, 'Packer error: ' + packer.err);
   assert.deepStrictEqual(packer.result, expected);
-  assert.strictEqual(flushCount, expFlushCount, 'onData called ' + flushCount + 'times, expected: ' + expFlushCount);
+  assert.strictEqual(
+    flushCount,
+    expFlushCount,
+    'onData called ' + flushCount + 'times, expected: ' + expFlushCount
+  );
 }
 
 describe('Small input chunks', () => {
-
   it('deflate 100b by 1b chunk', () => {
     const buf = randomBuf(100);
     const deflated = pako.deflate(buf);
@@ -71,12 +70,9 @@ describe('Small input chunks', () => {
     const deflated = pako.deflate(buf);
     testChunk(deflated, buf, new pako.Inflate(), 10);
   });
-
 });
 
-
 describe('Dummy push (force end)', () => {
-
   it('deflate end', () => {
     const data = samples.lorem_utf_100k;
 
@@ -95,12 +91,9 @@ describe('Dummy push (force end)', () => {
 
     assert.deepStrictEqual(inflator.result, pako.inflate(data));
   });
-
 });
 
-
 describe('Edge condition', () => {
-
   it('should be ok on buffer border', () => {
     let i;
     const data = new Uint8Array(1024 * 16 + 1);
@@ -123,5 +116,4 @@ describe('Edge condition', () => {
     assert.ok(!inflator.err, 'Inflate failed with status ' + inflator.err);
     assert.deepStrictEqual(data, inflator.result);
   });
-
 });

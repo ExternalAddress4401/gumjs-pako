@@ -1,11 +1,11 @@
-'use strict';
+import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
 
+import pako from '../index.js';
+import { fileURLToPath } from 'url';
 
-const fs     = require('fs');
-const path   = require('path');
-const assert = require('assert');
-
-const pako  = require('../index');
+const __dirname = getDirName();
 
 // Load fixtures to test
 // return: { 'filename1': content1, 'filename2': content2, ...}
@@ -14,20 +14,23 @@ function loadSamples(subdir) {
   const result = {};
   const dir = path.join(__dirname, 'fixtures', subdir || 'samples');
 
-  fs.readdirSync(dir).sort().forEach(function (sample) {
-    const filepath = path.join(dir, sample);
-    const extname  = path.extname(filepath);
-    const basename = path.basename(filepath, extname);
-    const content  = new Uint8Array(fs.readFileSync(filepath));
+  fs.readdirSync(dir)
+    .sort()
+    .forEach(function (sample) {
+      const filepath = path.join(dir, sample);
+      const extname = path.extname(filepath);
+      const basename = path.basename(filepath, extname);
+      const content = new Uint8Array(fs.readFileSync(filepath));
 
-    if (basename[0] === '_') { return; } // skip files with name, started with dash
+      if (basename[0] === '_') {
+        return;
+      } // skip files with name, started with dash
 
-    result[basename] = content;
-  });
+      result[basename] = content;
+    });
 
   return result;
 }
-
 
 function testInflate(samples, inflateOptions, deflateOptions) {
   let name, data, deflated, inflated;
@@ -45,6 +48,9 @@ function testInflate(samples, inflateOptions, deflateOptions) {
   }
 }
 
+function getDirName() {
+  return fileURLToPath(new URL(".", import.meta.url));
+};
 
-module.exports.testInflate = testInflate;
-module.exports.loadSamples = loadSamples;
+export { testInflate, loadSamples, getDirName }
+

@@ -1,18 +1,30 @@
 // Top level file is just a mixin of submodules & constants
-'use strict';
+import { Deflate, deflate, deflateRaw, gzip } from "./lib/deflate.js";
 
-const { Deflate, deflate, deflateRaw, gzip } = require('./lib/deflate');
+import { Inflate, inflate, inflateRaw, ungzip } from "./lib/inflate.js";
 
-const { Inflate, inflate, inflateRaw, ungzip } = require('./lib/inflate');
+import constants from "./lib/zlib/constants.js";
 
-const constants = require('./lib/zlib/constants');
+export default {
+  Deflate,
+  deflate,
+  deflateRaw,
+  gzip,
+  Inflate,
+  inflate,
+  inflateRaw,
+  ungzip,
+  constants,
+};
 
-module.exports.Deflate = Deflate;
-module.exports.deflate = deflate;
-module.exports.deflateRaw = deflateRaw;
-module.exports.gzip = gzip;
-module.exports.Inflate = Inflate;
-module.exports.inflate = inflate;
-module.exports.inflateRaw = inflateRaw;
-module.exports.ungzip = ungzip;
-module.exports.constants = constants;
+export {
+  Deflate,
+  deflate,
+  deflateRaw,
+  gzip,
+  Inflate,
+  inflate,
+  inflateRaw,
+  ungzip,
+  constants,
+};

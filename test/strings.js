@@ -1,12 +1,12 @@
-'use strict';
+import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
+import strings from '../lib/utils/strings.js';
 
+import pako from '../index.js';
+import { getDirName } from './helpers.js';
 
-const fs      = require('fs');
-const path    = require('path');
-const assert  = require('assert');
-
-const pako    = require('../index');
-const strings = require('../lib/utils/strings');
+const __dirname = getDirName();
 
 // fromCharCode, but understands right > 0xffff values
 function fixedFromCharCode(code) {
@@ -26,18 +26,27 @@ function fixedFromCharCode(code) {
 function a2utf16(arr) {
   let result = '';
   arr.forEach(function (item) {
-    if (typeof item === 'string') { result += item; return; }
+    if (typeof item === 'string') {
+      result += item;
+      return;
+    }
     result += fixedFromCharCode(item);
   });
   return result;
 }
 
-
 describe('Encode/Decode', () => {
-
   // Create sample, that contains all types of utf8 (1-4byte) after conversion
-  const utf16sample = a2utf16([ 0x1f3b5, 'a', 0x266a, 0x35, 0xe800, 0x10ffff, 0x0fffff ]);
-  // use node Buffer internal conversion as "done right"
+  const utf16sample = a2utf16([
+    0x1f3b5,
+    'a',
+    0x266a,
+    0x35,
+    0xe800,
+    0x10ffff,
+    0x0fffff
+  ]);
+  // use node Buffer internal conversion as 'done right'
   const utf8sample = new Uint8Array(Buffer.from(utf16sample));
 
   let _TextEncoder, _TextDecoder;
@@ -84,16 +93,10 @@ describe('Encode/Decode', () => {
   });
 
   it('Encode string to utf8 buf', () => {
-    assert.deepStrictEqual(
-      strings.string2buf(utf16sample),
-      utf8sample
-    );
+    assert.deepStrictEqual(strings.string2buf(utf16sample), utf8sample);
 
     TextEncoder = null;
-    assert.deepStrictEqual(
-      strings.string2buf(utf16sample),
-      utf8sample
-    );
+    assert.deepStrictEqual(strings.string2buf(utf16sample), utf8sample);
   });
 
   it('Decode utf8 buf to string', () => {
@@ -102,15 +105,12 @@ describe('Encode/Decode', () => {
     TextDecoder = null;
     assert.ok(strings.buf2string(utf8sample), utf16sample);
   });
-
 });
 
-
 describe('Deflate/Inflate strings', () => {
-
   const file = path.join(__dirname, 'fixtures/samples/lorem_utf_100k.txt');
   const sampleString = fs.readFileSync(file, 'utf8');
-  const sampleArray  = new Uint8Array(fs.readFileSync(file));
+  const sampleArray = new Uint8Array(fs.readFileSync(file));
 
   it('Deflate javascript string (utf16) on input', () => {
     assert.deepStrictEqual(
@@ -120,11 +120,10 @@ describe('Deflate/Inflate strings', () => {
   });
 
   it('Inflate with javascript string (utf16) output', () => {
-    const deflatedArray  = pako.deflate(sampleArray);
+    const deflatedArray = pako.deflate(sampleArray);
     const data = pako.inflate(deflatedArray, { to: 'string', chunkSize: 99 });
 
     assert.strictEqual(typeof data, 'string');
     assert.strictEqual(data, sampleString);
   });
-
 });

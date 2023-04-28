@@ -1,14 +1,12 @@
-'use strict';
+import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
 
-const assert  = require('assert');
-const fs      = require('fs');
-const path    = require('path');
-
-const pako        = require('../index');
-const loadSamples = require('./helpers').loadSamples;
+import pako from '../index.js';
+import { getDirName, loadSamples } from './helpers.js';
 
 const sample = loadSamples().lorem_en_100k;
-
+const __dirname = getDirName();
 
 // Helper used to compare pako deflate using various options
 // with reference values from old node.js zlib.
@@ -33,9 +31,7 @@ function testSample(pako_method, sample, options, filename) {
   assert.deepStrictEqual(pako_result, new Uint8Array(zlib_result));
 }
 
-
 describe('Deflate defaults', () => {
-
   it('deflate, no options', () => {
     testSample(pako.deflate, sample, {}, 'deflate.bin');
   });
@@ -50,9 +46,7 @@ describe('Deflate defaults', () => {
   });
 });
 
-
 describe('Deflate levels', () => {
-
   it('level 9', () => {
     testSample(pako.deflate, sample, { level: 9 }, 'deflate_level=9.bin');
   });
@@ -85,42 +79,82 @@ describe('Deflate levels', () => {
   });
 });
 
-
 describe('Deflate windowBits', () => {
-
   it('windowBits 15', () => {
-    testSample(pako.deflate, sample, { windowBits: 15 }, 'deflate_windowBits=15.bin');
+    testSample(
+      pako.deflate,
+      sample,
+      { windowBits: 15 },
+      'deflate_windowBits=15.bin'
+    );
   });
   it('windowBits 14', () => {
-    testSample(pako.deflate, sample, { windowBits: 14 }, 'deflate_windowBits=14.bin');
+    testSample(
+      pako.deflate,
+      sample,
+      { windowBits: 14 },
+      'deflate_windowBits=14.bin'
+    );
   });
   it('windowBits 13', () => {
-    testSample(pako.deflate, sample, { windowBits: 13 }, 'deflate_windowBits=13.bin');
+    testSample(
+      pako.deflate,
+      sample,
+      { windowBits: 13 },
+      'deflate_windowBits=13.bin'
+    );
   });
   it('windowBits 12', () => {
-    testSample(pako.deflate, sample, { windowBits: 12 }, 'deflate_windowBits=12.bin');
+    testSample(
+      pako.deflate,
+      sample,
+      { windowBits: 12 },
+      'deflate_windowBits=12.bin'
+    );
   });
   it('windowBits 11', () => {
-    testSample(pako.deflate, sample, { windowBits: 11 }, 'deflate_windowBits=11.bin');
+    testSample(
+      pako.deflate,
+      sample,
+      { windowBits: 11 },
+      'deflate_windowBits=11.bin'
+    );
   });
   it('windowBits 10', () => {
-    testSample(pako.deflate, sample, { windowBits: 10 }, 'deflate_windowBits=10.bin');
+    testSample(
+      pako.deflate,
+      sample,
+      { windowBits: 10 },
+      'deflate_windowBits=10.bin'
+    );
   });
   it('windowBits 9', () => {
-    testSample(pako.deflate, sample, { windowBits: 9 }, 'deflate_windowBits=9.bin');
+    testSample(
+      pako.deflate,
+      sample,
+      { windowBits: 9 },
+      'deflate_windowBits=9.bin'
+    );
   });
   it('windowBits 8', () => {
-    testSample(pako.deflate, sample, { windowBits: 8 }, 'deflate_windowBits=8.bin');
+    testSample(
+      pako.deflate,
+      sample,
+      { windowBits: 8 },
+      'deflate_windowBits=8.bin'
+    );
   });
   it('windowBits -15 (implicit raw)', () => {
-    testSample(pako.deflate, sample, { windowBits: -15 }, 'deflateRaw_windowBits=15.bin');
+    testSample(
+      pako.deflate,
+      sample,
+      { windowBits: -15 },
+      'deflateRaw_windowBits=15.bin'
+    );
   });
-
 });
 
-
 describe('Deflate memLevel', () => {
-
   it('memLevel 9', () => {
     testSample(pako.deflate, sample, { memLevel: 9 }, 'deflate_memLevel=9.bin');
   });
@@ -148,12 +182,9 @@ describe('Deflate memLevel', () => {
   it('memLevel 1', () => {
     testSample(pako.deflate, sample, { memLevel: 1 }, 'deflate_memLevel=1.bin');
   });
-
 });
 
-
 describe('Deflate strategy', () => {
-
   it('Z_DEFAULT_STRATEGY', () => {
     testSample(pako.deflate, sample, { strategy: 0 }, 'deflate_strategy=0.bin');
   });
@@ -169,9 +200,7 @@ describe('Deflate strategy', () => {
   it('Z_FIXED', () => {
     testSample(pako.deflate, sample, { strategy: 4 }, 'deflate_strategy=4.bin');
   });
-
 });
-
 
 describe('Deflate RAW', () => {
   // Since difference is only in wrapper, test for store/fast/slow methods are enough
@@ -181,20 +210,29 @@ describe('Deflate RAW', () => {
   it('level 1', () => {
     testSample(pako.deflateRaw, sample, { level: 1 }, 'deflateRaw_level=1.bin');
   });
-
 });
 
-
 describe('Deflate dictionary', () => {
-
   it('trivial dictionary', () => {
     const dict = Buffer.from('abcdefghijklmnoprstuvwxyz');
-    testSample(pako.deflate, sample, { dictionary: dict }, 'deflate_dictionary=trivial.bin');
+    testSample(
+      pako.deflate,
+      sample,
+      { dictionary: dict },
+      'deflate_dictionary=trivial.bin'
+    );
   });
 
   it('spdy dictionary', () => {
-    const spdyDict = require('fs').readFileSync(require('path').join(__dirname, 'fixtures', 'spdy_dict.txt'));
+    const spdyDict = fs.readFileSync(
+      path.join(__dirname, 'fixtures', 'spdy_dict.txt')
+    );
 
-    testSample(pako.deflate, sample, { dictionary: spdyDict }, 'deflate_dictionary=spdy.bin');
+    testSample(
+      pako.deflate,
+      sample,
+      { dictionary: spdyDict },
+      'deflate_dictionary=spdy.bin'
+    );
   });
 });

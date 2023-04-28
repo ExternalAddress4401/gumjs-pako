@@ -1,24 +1,23 @@
-'use strict';
+import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
+import zlib from 'zlib';
 
+import pako from '../index.js';
+import { Z_SYNC_FLUSH } from '../lib/zlib/constants.js';
+import { getDirName } from './helpers.js';
 
-const fs      = require('fs');
-const path    = require('path');
-const assert  = require('assert');
-const zlib    = require('zlib');
-
-const pako    = require('../index');
-const { Z_SYNC_FLUSH } = require('../lib/zlib/constants');
-
+const __dirname = getDirName();
 
 function a2s(array) {
   return String.fromCharCode.apply(null, array);
 }
 
-
 describe('Gzip special cases', () => {
-
   it('Read custom headers', () => {
-    const data = fs.readFileSync(path.join(__dirname, 'fixtures/gzip-headers.gz'));
+    const data = fs.readFileSync(
+      path.join(__dirname, 'fixtures/gzip-headers.gz')
+    );
     const inflator = new pako.Inflate();
     inflator.push(data);
 
@@ -58,7 +57,9 @@ describe('Gzip special cases', () => {
   });
 
   it('Read stream with SYNC marks (multistream source, file 1)', () => {
-    const data = fs.readFileSync(path.join(__dirname, 'fixtures/gzip-joined.gz'));
+    const data = fs.readFileSync(
+      path.join(__dirname, 'fixtures/gzip-joined.gz')
+    );
 
     assert.deepStrictEqual(
       pako.ungzip(data),
@@ -67,7 +68,9 @@ describe('Gzip special cases', () => {
   });
 
   it.skip('Read stream with SYNC marks (multistream source, file 2)', () => {
-    const data = fs.readFileSync(path.join(__dirname, 'fixtures/gzip-joined-bgzip.gz'));
+    const data = fs.readFileSync(
+      path.join(__dirname, 'fixtures/gzip-joined-bgzip.gz')
+    );
 
     assert.deepStrictEqual(
       // Currently fails with this chunk size
@@ -97,5 +100,4 @@ describe('Gzip special cases', () => {
     assert.deepStrictEqual(pako.ungzip(flushed), pako.ungzip(normal));
     assert.ok(flushed.length > normal.length);
   });
-
 });

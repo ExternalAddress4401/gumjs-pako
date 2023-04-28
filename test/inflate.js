@@ -1,19 +1,15 @@
-'use strict';
+import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
+import zlib from 'zlib';
 
+import pako from '../index.js';
+import { testInflate, loadSamples, getDirName } from './helpers.js';
 
-const assert  = require('assert');
-const fs      = require('fs');
-const path    = require('path');
-const zlib    = require('zlib');
-
-const pako    = require('../index');
-const { testInflate, loadSamples } = require('./helpers');
-
-
+const __dirname = getDirName();
 const samples = loadSamples();
 
 describe('Inflate defaults', () => {
-
   it('inflate, no options', () => {
     testInflate(samples, {}, {});
   });
@@ -23,15 +19,15 @@ describe('Inflate defaults', () => {
   });
 
   it('inflate raw from compressed samples', () => {
-    Object.values(loadSamples('samples_deflated_raw')).forEach(function (sample) {
+    Object.values(loadSamples('samples_deflated_raw')).forEach(function (
+      sample
+    ) {
       const pako_result = pako.inflateRaw(sample);
       const zlib_result = zlib.inflateRawSync(sample);
       assert.deepStrictEqual(pako_result, new Uint8Array(zlib_result));
     });
   });
-
 });
-
 
 describe('Inflate ungzip', () => {
   it('with autodetect', () => {
@@ -43,9 +39,7 @@ describe('Inflate ungzip', () => {
   });
 });
 
-
 describe('Inflate levels', () => {
-
   it('level 9', () => {
     testInflate(samples, {}, { level: 9 });
   });
@@ -76,12 +70,9 @@ describe('Inflate levels', () => {
   it('level 0', () => {
     testInflate(samples, {}, { level: 0 });
   });
-
 });
 
-
 describe('Inflate windowBits', () => {
-
   it('windowBits 15', () => {
     testInflate(samples, {}, { windowBits: 15 });
   });
@@ -106,11 +97,9 @@ describe('Inflate windowBits', () => {
   it('windowBits 8', () => {
     testInflate(samples, {}, { windowBits: 8 });
   });
-
 });
 
 describe('Inflate strategy', () => {
-
   it('Z_DEFAULT_STRATEGY', () => {
     testInflate(samples, {}, { strategy: 0 });
   });
@@ -126,9 +115,7 @@ describe('Inflate strategy', () => {
   it('Z_FIXED', () => {
     testInflate(samples, {}, { strategy: 4 });
   });
-
 });
-
 
 describe('Inflate RAW', () => {
   // Since difference is only in rwapper, test for store/fast/slow methods are enough
@@ -162,15 +149,14 @@ describe('Inflate RAW', () => {
   it('level 0', () => {
     testInflate(samples, { raw: true }, { level: 0, raw: true });
   });
-
 });
 
-
 describe('Inflate with dictionary', () => {
-
   it('should throw on the wrong dictionary', () => {
     // const zCompressed = helpers.deflateSync('world', { dictionary: Buffer.from('hello') });
-    const zCompressed = new Uint8Array([ 120, 187, 6, 44, 2, 21, 43, 207, 47, 202, 73, 1, 0, 6, 166, 2, 41 ]);
+    const zCompressed = new Uint8Array([
+      120, 187, 6, 44, 2, 21, 43, 207, 47, 202, 73, 1, 0, 6, 166, 2, 41
+    ]);
 
     assert.throws(function () {
       pako.inflate(zCompressed, { dictionary: 'world' });
@@ -183,7 +169,9 @@ describe('Inflate with dictionary', () => {
   });
 
   it('spdy dictionary', () => {
-    const spdyDict = require('fs').readFileSync(require('path').join(__dirname, 'fixtures', 'spdy_dict.txt'));
+    const spdyDict = fs.readFileSync(
+      path.join(__dirname, 'fixtures', 'spdy_dict.txt')
+    );
     testInflate(samples, { dictionary: spdyDict }, { dictionary: spdyDict });
   });
 
@@ -195,8 +183,14 @@ describe('Inflate with dictionary', () => {
   });
 
   it('tests raw inflate with spdy dictionary', () => {
-    const spdyDict = require('fs').readFileSync(require('path').join(__dirname, 'fixtures', 'spdy_dict.txt'));
-    testInflate(samples, { raw: true, dictionary: spdyDict }, { raw: true, dictionary: spdyDict });
+    const spdyDict = fs.readFileSync(
+      path.join(__dirname, 'fixtures', 'spdy_dict.txt')
+    );
+    testInflate(
+      samples,
+      { raw: true, dictionary: spdyDict },
+      { raw: true, dictionary: spdyDict }
+    );
   });
 
   it('tests dictionary as Uint8Array', () => {
@@ -212,12 +206,14 @@ describe('Inflate with dictionary', () => {
   });
 });
 
-
 describe('pako patches for inflate', () => {
-
   it('Force use max window size by default', () => {
-    const data = fs.readFileSync(path.join(__dirname, 'fixtures/bad_wbits.deflate'));
-    const unpacked = fs.readFileSync(path.join(__dirname, 'fixtures/bad_wbits.txt'));
+    const data = fs.readFileSync(
+      path.join(__dirname, 'fixtures/bad_wbits.deflate')
+    );
+    const unpacked = fs.readFileSync(
+      path.join(__dirname, 'fixtures/bad_wbits.txt')
+    );
 
     assert.deepStrictEqual(pako.inflate(data), new Uint8Array(unpacked));
   });

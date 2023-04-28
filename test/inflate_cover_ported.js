@@ -1,22 +1,17 @@
 // This tests are ported from original zlib
-'use strict';
+import assert from 'assert';
+import c from '../lib/zlib/constants.js';
+import msg from '../lib/zlib/messages.js';
+import zlib_inflate from '../lib/zlib/inflate.js';
+import inflate_table from '../lib/zlib/inftrees.js';
 
-
-const assert = require('assert');
-
-const c = require('../lib/zlib/constants');
-const msg = require('../lib/zlib/messages');
-//const zlib_stream = require('../lib/zlib/zstream');
-const zlib_inflate = require('../lib/zlib/inflate');
-const inflate_table = require('../lib/zlib/inftrees');
-
-const pako  = require('../index');
-
+import pako from '../index.js';
 
 function h2b(hex) {
-  return hex.split(' ').map(function (hx) { return parseInt(hx, 16); });
+  return hex.split(' ').map(function (hx) {
+    return parseInt(hx, 16);
+  });
 }
-
 
 //step argument from original tests is missing because it have no effect
 //we have similar behavior in chunks.js tests
@@ -32,11 +27,9 @@ function testInflate(hex, wbits, status) {
   assert.strictEqual(inflator.err, status);
 }
 
-
 describe('Inflate states', () => {
   //in port checking input parameters was removed
   it('inflate bad parameters', () => {
-
     let ret = zlib_inflate.inflate(null, 0);
     assert(ret === c.Z_STREAM_ERROR);
 
@@ -126,23 +119,38 @@ describe('Inflate cover', () => {
     testInflate('1f 8b 8 0 0 0 0 0 0 0 3 0 0 0 0 1', 47, c.Z_DATA_ERROR);
   });
   it('incorrect length check', () => {
-    testInflate('1f 8b 8 0 0 0 0 0 0 0 3 0 0 0 0 0 0 0 0 1', 47, c.Z_DATA_ERROR);
+    testInflate(
+      '1f 8b 8 0 0 0 0 0 0 0 3 0 0 0 0 0 0 0 0 1',
+      47,
+      c.Z_DATA_ERROR
+    );
   });
   it('pull 17', () => {
     testInflate('5 c0 21 d 0 0 0 80 b0 fe 6d 2f 91 6c', -15, c.Z_OK);
   });
   it('long code', () => {
-    testInflate('5 e0 81 91 24 cb b2 2c 49 e2 f 2e 8b 9a 47 56 9f fb fe ec d2 ff 1f', -15, c.Z_OK);
+    testInflate(
+      '5 e0 81 91 24 cb b2 2c 49 e2 f 2e 8b 9a 47 56 9f fb fe ec d2 ff 1f',
+      -15,
+      c.Z_OK
+    );
   });
   it('length extra', () => {
     testInflate('ed c0 1 1 0 0 0 40 20 ff 57 1b 42 2c 4f', -15, c.Z_OK);
   });
   it('long distance and extra', () => {
-    testInflate('ed cf c1 b1 2c 47 10 c4 30 fa 6f 35 1d 1 82 59 3d fb be 2e 2a fc f c', -15, c.Z_OK);
+    testInflate(
+      'ed cf c1 b1 2c 47 10 c4 30 fa 6f 35 1d 1 82 59 3d fb be 2e 2a fc f c',
+      -15,
+      c.Z_OK
+    );
   });
   it('window end', () => {
-    testInflate('ed c0 81 0 0 0 0 80 a0 fd a9 17 a9 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 6',
-      -15, c.Z_OK);
+    testInflate(
+      'ed c0 81 0 0 0 0 80 a0 fd a9 17 a9 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 6',
+      -15,
+      c.Z_OK
+    );
   });
   it('inflate_fast TYPE return', () => {
     testInflate('2 8 20 80 0 3 0', -15, c.Z_OK);
@@ -154,7 +162,12 @@ describe('Inflate cover', () => {
 
 describe('cover trees', () => {
   it('inflate_table not enough errors', () => {
-    let ret, bits, next, table = [], lens = [], work = [];
+    let ret,
+        bits,
+        next,
+        table = [],
+        lens = [],
+        work = [];
     const DISTS = 2;
     /* we need to call inflate_table() directly in order to manifest not-
      enough errors, since zlib insures that enough is always enough */
@@ -175,18 +188,30 @@ describe('cover trees', () => {
 
 describe('Inflate fast', () => {
   it('fast length extra bits', () => {
-    testInflate('e5 e0 81 ad 6d cb b2 2c c9 01 1e 59 63 ae 7d ee fb 4d fd b5 35 41 68' +
-      ' ff 7f 0f 0 0 0', -8, c.Z_DATA_ERROR);
+    testInflate(
+      'e5 e0 81 ad 6d cb b2 2c c9 01 1e 59 63 ae 7d ee fb 4d fd b5 35 41 68' +
+        ' ff 7f 0f 0 0 0',
+      -8,
+      c.Z_DATA_ERROR
+    );
   });
   it('fast distance extra bits', () => {
-    testInflate('25 fd 81 b5 6d 59 b6 6a 49 ea af 35 6 34 eb 8c b9 f6 b9 1e ef 67 49' +
-      ' 50 fe ff ff 3f 0 0', -8, c.Z_DATA_ERROR);
+    testInflate(
+      '25 fd 81 b5 6d 59 b6 6a 49 ea af 35 6 34 eb 8c b9 f6 b9 1e ef 67 49' +
+        ' 50 fe ff ff 3f 0 0',
+      -8,
+      c.Z_DATA_ERROR
+    );
   });
   it('fast invalid literal/length code', () => {
     testInflate('1b 7 0 0 0 0 0', -8, c.Z_DATA_ERROR);
   });
   it('fast 2nd level codes and too far back', () => {
-    testInflate('d c7 1 ae eb 38 c 4 41 a0 87 72 de df fb 1f b8 36 b1 38 5d ff ff 0', -8, c.Z_DATA_ERROR);
+    testInflate(
+      'd c7 1 ae eb 38 c 4 41 a0 87 72 de df fb 1f b8 36 b1 38 5d ff ff 0',
+      -8,
+      c.Z_DATA_ERROR
+    );
   });
   it('very common case', () => {
     testInflate('63 18 5 8c 10 8 0 0 0 0', -8, c.Z_OK);

@@ -1,21 +1,21 @@
 // Deflate coverage tests
-'use strict';
+import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
 
+import c from '../lib/zlib/constants.js';
+import msg from '../lib/zlib/messages.js';
+import zlib_deflate from '../lib/zlib/deflate.js';
+import ZStream from '../lib/zlib/zstream.js';
 
-const assert = require('assert');
-const fs = require('fs');
-const path  = require('path');
+import pako from '../index.js';
+import { getDirName } from './helpers.js';
 
-const c = require('../lib/zlib/constants');
-const msg = require('../lib/zlib/messages');
-const zlib_deflate = require('../lib/zlib/deflate');
-const ZStream = require('../lib/zlib/zstream');
-
-const pako  = require('../index');
-
-
+const __dirname = getDirName();
 const short_sample = 'hello world';
-const long_sample = fs.readFileSync(path.join(__dirname, 'fixtures/samples/lorem_en_100k.txt'));
+const long_sample = fs.readFileSync(
+  path.join(__dirname, 'fixtures/samples/lorem_en_100k.txt')
+);
 
 function testDeflate(data, opts, flush) {
   const deflator = new pako.Deflate(opts);
@@ -47,7 +47,6 @@ describe('Deflate support', () => {
     testDeflate(short_sample, { strategy: 2 }, 0);
     testDeflate(short_sample, { strategy: 2, chunkSize: 10 }, 5);
     testDeflate(long_sample, { strategy: 2, chunkSize: 10 }, 0);
-
   });
 });
 

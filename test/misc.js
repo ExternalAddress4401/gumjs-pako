@@ -1,15 +1,14 @@
-'use strict';
+import assert from 'assert';
+import fs from 'fs';
+import path from 'path';
 
+import pako from '../index.js';
+import { getDirName } from './helpers.js';
 
-const fs      = require('fs');
-const path    = require('path');
-const assert  = require('assert');
-
-const pako    = require('../index');
+const __dirname = getDirName();
 
 describe('ArrayBuffer', () => {
-
-  const file   = path.join(__dirname, 'fixtures/samples/lorem_utf_100k.txt');
+  const file = path.join(__dirname, 'fixtures/samples/lorem_utf_100k.txt');
   const sample = new Uint8Array(fs.readFileSync(file));
   const deflated = pako.deflate(sample);
 
